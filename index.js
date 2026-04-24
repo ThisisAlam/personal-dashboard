@@ -28,7 +28,7 @@ async function renderImage(query){
             document.getElementById('author').textContent = 'Author: Lex Melony'
         })
 }
-
+let icon = ''
 const coinName = 'dogecoin'
 async function renderCoinDetails(coinName) {
     await fetch(`https://api.coingecko.com/api/v3/coins/${coinName}`)
@@ -54,5 +54,61 @@ async function renderCoinDetails(coinName) {
 
         })
 }
+function updatedateTime(){
+    
+// console.log(date.toLocaleTimeString("en-us", {timeStyle: "medium"})
+    
+    const date = document.getElementById('current-date')
+    const time = document.getElementById('current-time')
+    const now = new Date()
+    date.textContent = now.toLocaleDateString()
+    time.textContent = now.toLocaleTimeString()
+    setInterval( updatedateTime, 1000)
+
+}
+
+const weatherApiKey = '21dd969575e8117958f6111586be1328'
+async function updateWeather(lat, lon, weatherApiKey, icon){
+    await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&units=metric`)
+        .then(res => {
+            if(!res.ok){
+                throw Error('Something went wrong')
+            }
+            return res.json()
+        })
+        .then(data => {
+            if(!data){
+                throw Error('Something went wrong')
+            }
+            console.log(data)
+            console.log(data.name)
+            console.log(data.main.temp)
+            const icon = data.weather[0].icon
+            document.getElementById('weather-img').src = `https://openweathermap.org/img/wn/${icon}@2x.png`
+            document.getElementById('city-name').textContent = "City name: " + (data.name)
+            document.getElementById('city-temp').textContent = "Temperature (C): " + Math.floor(data.main.temp)
+        })
+        .catch(err => {
+            console.log('Error: ', err)
+        })
+}
+
+function getGeolocation(icon){
+    navigator.geolocation.getCurrentPosition(
+        position => {
+            const lat = position.coords.latitude
+            const lon = position.coords.longitude
+            console.log('position latitude: ', lat)
+            console.log('position longitude: ', lon)
+            updateWeather(lat, lon, weatherApiKey, icon)
+            
+        },
+        error => {
+            console.log('Error:', error.message)
+        }
+    )
+}
+getGeolocation()
+updatedateTime()
 renderCoinDetails(coinName)
 renderImage(query)
